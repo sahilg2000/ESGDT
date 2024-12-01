@@ -54,3 +54,23 @@ pub fn camera_setup(app: &mut App) {
     )
     .add_systems(Update, (camera_az_el::az_el_camera, camera_parent_system)); // setup the camera
 }
+
+pub fn hud_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(TextBundle {
+        style: Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
+        text: Text::from_section(
+            "Speed: -- km/h", // Placeholder text
+            TextStyle {
+                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                font_size: 30.0,
+                color: Color::WHITE,
+            },
+        ),
+        ..default()
+    });
+}
