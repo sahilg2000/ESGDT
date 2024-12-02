@@ -106,8 +106,6 @@ pub fn update_environment_system(
             dir_light.color = directional_light_color;
             dir_light.illuminance = illuminance;
         }
-
-        println!("Environment updated for weather: {:?}", *weather);
     }
 }
 
@@ -123,33 +121,38 @@ pub fn setup_rain_system(
     let mut module = Module::default();
 
     // Define expressions
-    let _position = module.lit(Vec3::ZERO);
-    let radius = module.lit(100.0);
     let center = module.lit(Vec3::ZERO);
-    let velocity_center = module.lit(Vec3::new(0.0, -1.0, 0.0));
+    let radius = module.lit(50.0);
+    let velocity_center = module.lit(Vec3::new(0.0, 0.0, -1.0)); 
     let speed = module.lit(50.0);
-    let accel = module.lit(Vec3::new(0.0, -9.81, 0.0));
+    let accel = module.lit(Vec3::ZERO);
+    let lifetime = module.lit(5.0);
 
     // Define the rain particle effect
     let effect = EffectAsset::new(
-        32768,
-        Spawner::rate(5000.0.into()),
+        100000,
+        Spawner::rate(10000.0.into()),
         module,
     )
     .with_name("Rain".to_string())
     .init(SetPositionSphereModifier {
         center,
         radius,
-        dimension: ShapeDimension::Surface,
+        dimension: ShapeDimension::Volume,
     })
     .init(SetVelocitySphereModifier {
         center: velocity_center,
         speed,
     })
+    .init(SetAttributeModifier::new(Attribute::LIFETIME, lifetime))
     .update(AccelModifier::new(accel))
     .render(BillboardModifier {})
     .render(ColorOverLifetimeModifier {
-        gradient: Gradient::constant(Vec4::new(0.5, 0.5, 1.0, 0.3)),
+        gradient: Gradient::constant(Vec4::new(0.5, 0.5, 1.0, 1.0)),
+    })
+    .render(SizeOverLifetimeModifier {
+        gradient: Gradient::constant(Vec2::splat(0.1)),
+        screen_space_size: false,
     });
 
     let effect_handle = effects.add(effect);
@@ -159,8 +162,8 @@ pub fn setup_rain_system(
             Name::new("RainEffect"),
             ParticleEffectBundle {
                 effect: ParticleEffect::new(effect_handle),
-                transform: Transform::from_translation(Vec3::new(0.0, 50.0, 0.0)),
-                visibility: Visibility::Visible, 
+                transform: Transform::from_translation(Vec3::ZERO),
+                visibility: Visibility::Visible,
                 ..default()
             },
         ))
