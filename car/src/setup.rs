@@ -11,6 +11,8 @@ use crate::{
         suspension_system,
     },
     tire::point_tire_system,
+    autonomous_control::{AutonomousPlugin, autonomous_control_system},  // update navigation and control
+
 };
 
 use super::control::CarControl;
@@ -20,22 +22,28 @@ use cameras::{
 };
 
 pub fn simulation_setup(app: &mut App) {
-    app.add_systems(
-        PhysicsSchedule,
-        (steering_system, steering_curvature_system).in_set(PhysicsSet::Pre),
-    )
-    .add_systems(
-        PhysicsSchedule,
-        (
-            suspension_system,
-            point_tire_system,
-            driven_wheel_lookup_system,
-            brake_wheel_system,
+    app
+        .add_plugins(AutonomousPlugin)  // update autonomous plugin
+        .add_systems(
+            PhysicsSchedule,
+            (
+                steering_system, 
+                steering_curvature_system,
+                autonomous_control_system,  // update autonomous system
+            ).in_set(PhysicsSet::Pre),
         )
-            .in_set(PhysicsSet::Evaluate),
-    )
-    .add_systems(Update, (user_control_system,))
-    .init_resource::<CarControl>();
+        .add_systems(
+            PhysicsSchedule,
+            (
+                suspension_system,
+                point_tire_system,
+                driven_wheel_lookup_system,
+                brake_wheel_system,
+            )
+                .in_set(PhysicsSet::Evaluate),
+        )
+        .add_systems(Update, (user_control_system,))
+        .init_resource::<CarControl>();
 }
 
 pub fn camera_setup(app: &mut App) {
