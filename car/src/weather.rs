@@ -151,9 +151,6 @@ pub fn setup_rain_system(
     .render(ColorOverLifetimeModifier {
         gradient: Gradient::constant(Vec4::new(0.5, 0.5, 1.0, 0.3)),
     });
-    .render(SizeOverLifetimeModifier {
-        gradient: Gradient::constant(0.1), // Adjust size as needed
-    });
 
     let effect_handle = effects.add(effect);
 
