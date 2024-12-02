@@ -131,13 +131,23 @@ pub fn build_car() -> CarDefinition {
 }
 
 pub fn build_wheel() -> Wheel {
+    /* 
+    Affects wheel air time.
+    Heavier wheels will be on the ground linger but will slow the car down
+    */ 
     let wheel_mass = 20.;
+
+    /*
+    Affects wheel size, larger wheels are bouncier
+    */
     let wheel_radius = 0.325_f64;
     let wheel_moi_y = wheel_mass * wheel_radius.powi(2);
     let wheel_moi_xz = 1. / 12. * 10. * (3. * wheel_radius.powi(2));
+
     let corner_mass = CHASSIS_MASS / 4. + SUSPENSION_MASS + wheel_mass;
     let wheel_stiffness = corner_mass * GRAVITY / 0.005;
     let wheel_damping = 0.01 * 2. * (wheel_stiffness * wheel_mass).sqrt();
+    
     Wheel {
         mass: wheel_mass,
         radius: wheel_radius,
@@ -146,10 +156,10 @@ pub fn build_wheel() -> Wheel {
         moi_xz: wheel_moi_xz,
         stiffness: [wheel_stiffness, 0.],
         damping: wheel_damping,
-        coefficient_of_friction: 0.8,
+        coefficient_of_friction: 1.8,
         rolling_radius: 0.315,
         low_speed: 1.0,
-        normalized_slip_stiffness: 20.0,
+        normalized_slip_stiffness: 2.0,     // Affects how far the car slips on braking
         filter_time: 0.005,
     }
 }
@@ -164,6 +174,9 @@ pub fn car_startup_system(mut commands: Commands, car: ResMut<CarDefinition>) {
         .build(&mut commands, Color::rgb(0.9, 0.1, 0.2), base_id);
     let chassis_id = chassis_ids[3]; // ids are not ordered by parent child order!!! "3" is rx, the last joint in the chain
 
+    /*
+    List of cameras that follow objects based on chassis coordiantes.
+    */
     let camera_parent_list = vec![
         chassis_ids[5], // follow x, y and z and yaw of chassis
         // chassis_ids[0], // only follow x of chassis (why would you do that?)
