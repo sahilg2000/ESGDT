@@ -17,6 +17,8 @@ cameras = {workspace = true}
 # physics
 grid_terrain = {workspace = true}
 
+bevy_hanabi = "0.7"
+
 [[example]]
 name = "car_json"
 path = "./examples/car_json/main.rs"
