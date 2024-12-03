@@ -197,7 +197,9 @@ impl HeadingController {
 pub fn autonomous_decision_system(
     mut auto_control: ResMut<AutonomousControl>,
     vehicle_state: Res<VehicleState>,
-    time: Res<Time>,
+    
+    // Unused time variable
+    _time: Res<Time>,
 ) {
     let target_reached = (auto_control.target_position - vehicle_state.position).length() < 0.1;
     
@@ -221,11 +223,15 @@ pub fn autonomous_control_system(
 ) {
     let dt = time.delta_seconds();
 
+    // Moved auto_control inputs here to avoid mutable variable borrow error 
+    let new_position = auto_control.target_position;
+    let new_velocity = auto_control.target_velocity;
+    let new_heading = auto_control.target_heading;
     match auto_control.mode {
         ControlMode::PositionTracking => {
             let control_output = auto_control.position_controller.compute(
                 vehicle_state.position,
-                auto_control.target_position,
+                new_position,
                 dt
             );
             
@@ -249,7 +255,7 @@ pub fn autonomous_control_system(
             let velocity_magnitude = vehicle_state.velocity.length();
             let control_output = auto_control.velocity_controller.compute(
                 velocity_magnitude,
-                auto_control.target_velocity,
+                new_velocity,
                 dt
             );
             
@@ -265,7 +271,7 @@ pub fn autonomous_control_system(
         ControlMode::HeadingTracking => {
             let control_output = auto_control.heading_controller.compute(
                 vehicle_state.heading,
-                auto_control.target_heading,
+                new_heading,
                 dt
             );
             
