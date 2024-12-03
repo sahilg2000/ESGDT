@@ -5,7 +5,8 @@ use rigid_body::plugin::RigidBodyPlugin;
 
 use car::build::{build_car, car_startup_system};
 use car::environment::build_environment;
-use car::setup::{camera_setup, simulation_setup, hud_setup, update_hud_system, update_weather_hud_system};
+use car::ui::{hud_setup, update_hud_system, update_weather_hud_system};
+use car::setup::{camera_setup, simulation_setup};
 use car::weather::{
     cycle_weather_system, setup_lighting_system, setup_rain_system, toggle_rain_system, update_environment_system, Weather,
 };

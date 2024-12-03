@@ -122,16 +122,25 @@ pub fn setup_rain_system(
 
     // Define expressions
     let center = module.lit(Vec3::ZERO);
-    let radius = module.lit(50.0);
-    let velocity_center = module.lit(Vec3::new(0.0, 0.0, -1.0)); 
-    let speed = module.lit(50.0);
+
+    // weather effect radius
+    let radius = module.lit(500.0);
+
+    // particle fall direction (falling down vs rising up)
+    let velocity_center = module.lit(Vec3::new(0.0, 0.0, 80.0)); 
+
+    // particle speed and acceleration 
+    let speed = module.lit(1000.0);
     let accel = module.lit(Vec3::ZERO);
-    let lifetime = module.lit(5.0);
+
+    // particle lifetime onscreen
+    let lifetime = module.lit(8.0);
 
     // Define the rain particle effect
     let effect = EffectAsset::new(
-        100000,
-        Spawner::rate(10000.0.into()),
+        // capacity and spawn rate (rain vs drizzle)
+        1000000,
+        Spawner::rate(40000.0.into()),
         module,
     )
     .with_name("Rain".to_string())
@@ -151,7 +160,8 @@ pub fn setup_rain_system(
         gradient: Gradient::constant(Vec4::new(0.5, 0.5, 1.0, 1.0)),
     })
     .render(SizeOverLifetimeModifier {
-        gradient: Gradient::constant(Vec2::splat(0.1)),
+        // rain particle size
+        gradient: Gradient::constant(Vec2::splat(0.7)),
         screen_space_size: false,
     });
 
