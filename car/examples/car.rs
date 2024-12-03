@@ -9,7 +9,6 @@ use car::setup::{camera_setup, simulation_setup, hud_setup, update_hud_system, u
 use car::weather::{
     cycle_weather_system, setup_lighting_system, setup_rain_system, toggle_rain_system, update_environment_system, Weather,
 };
-use car::setup::update_hud_system; 
 
 fn main() {
     let car_definition = build_car();
@@ -37,7 +36,6 @@ fn main() {
         
         // weather.rs
         .add_systems(Startup, setup_lighting_system) // Added lighting setup here
-=======
 
         // setup.rs
         .add_systems(Startup, hud_setup)
@@ -48,7 +46,6 @@ fn main() {
         
         // weather.rs
         .add_systems(Startup, setup_lighting_system)
->>>>>>> Stashed changes
         .add_systems(Startup, setup_rain_system)
         .add_systems(Update, cycle_weather_system)
         .add_systems(Update, update_environment_system)
@@ -57,9 +54,5 @@ fn main() {
         // setup.rs
         .add_systems(Startup, hud_setup)
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
         .run();
 }
