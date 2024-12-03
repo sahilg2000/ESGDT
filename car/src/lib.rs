@@ -1,3 +1,4 @@
+pub mod autonomous_control;
 pub mod build;
 pub mod control;
 pub mod environment;
