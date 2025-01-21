@@ -2,19 +2,28 @@ use bevy::prelude::*;
 
 use crate::camera_az_el::AzElCamera;
 
+<<<<<<< Updated upstream
+// Resource to manage potential parent entities for the camera
+=======
+#[derive(Component)]
+pub struct FirstPersonCamera;
+
+>>>>>>> Stashed changes
 #[derive(Resource)]
 pub struct CameraParentList {
     pub list: Vec<Entity>,
     pub active: usize,
 }
 
+// System to handle camera parenting logic
 pub fn camera_parent_system(
     mut commands: Commands,
     mut parent_list: ResMut<CameraParentList>,
     mut query: Query<Entity, With<AzElCamera>>,
     focused_windows: Query<(Entity, &Window)>,
-    input: Res<Input<KeyCode>>,
+    input: Res<Input<KeyCode>>, // For user's input
 ) {
+    // Check whether windows is currently active
     for (_window, focus) in focused_windows.iter() {
         if !focus.focused {
             continue;
@@ -24,6 +33,7 @@ pub fn camera_parent_system(
             continue;
         }
 
+        // Switch to the next parent entity if "C" is pressed
         if input.just_pressed(KeyCode::C) {
             parent_list.active = (parent_list.active + 1) % parent_list.list.len();
         }
@@ -40,6 +50,24 @@ pub fn camera_parent_system(
                     camera_entity_commands.remove_parent();
                 }
             }
+        }
+    }
+}
+
+pub fn camera_toggle_system(
+    input: Res<Input<KeyCode>>,
+    mut orbit_query: Query<&mut Camera, (With<AzElCamera>, Without<FirstPersonCamera>)>,
+    mut fp_query: Query<&mut Camera, (With<FirstPersonCamera>, Without<AzElCamera>)>,
+) {
+    // Press 'V' to toggle
+    if input.just_pressed(KeyCode::V) {
+        // Toggle the first-person camera
+        if let Ok(mut fp_cam) = fp_query.get_single_mut() {
+            fp_cam.is_active = !fp_cam.is_active;
+        }
+        // Toggle the orbital camera
+        if let Ok(mut orbit_cam) = orbit_query.get_single_mut() {
+            orbit_cam.is_active = !orbit_cam.is_active;
         }
     }
 }
