@@ -3,15 +3,16 @@ use bevy::{
     render::{mesh::Indices, render_resource::PrimitiveTopology},
 };
 use rigid_body::sva::Vector;
-
 use crate::{GridElement, Interference};
 
+// Represents a flat plane with given size and detail level
 pub struct Plane {
-    pub size: [f64; 2],
-    pub subdivisions: u32,
+    pub size: [f64; 2],           // Width and height
+    pub subdivisions: u32,        // Level of mesh detail
 }
 
 impl GridElement for Plane {
+    // Returns collision data if point is below plane (z < 0)
     fn interference(&self, point: Vector) -> Option<Interference> {
         if point.z < 0. {
             return Some(Interference {
@@ -24,6 +25,7 @@ impl GridElement for Plane {
         }
     }
 
+    // Creates a mesh grid for rendering the plane
     fn mesh(&self) -> Mesh {
         let y_vertex_count = self.subdivisions + 2;
         let x_vertex_count = self.subdivisions + 2;
@@ -36,6 +38,7 @@ impl GridElement for Plane {
         let mut uvs: Vec<[f32; 2]> = Vec::with_capacity(num_vertices);
         let mut indices: Vec<u32> = Vec::with_capacity(num_indices);
 
+        // Generate vertices
         for y in 0..y_vertex_count {
             for x in 0..x_vertex_count {
                 let tx = x as f32 / (x_vertex_count - 1) as f32;
@@ -46,6 +49,7 @@ impl GridElement for Plane {
             }
         }
 
+        // Generate triangle indices
         for y in 0..y_vertex_count - 1 {
             for x in 0..x_vertex_count - 1 {
                 let quad = y * x_vertex_count + x;
