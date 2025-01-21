@@ -2,7 +2,13 @@ use bevy::prelude::*;
 
 use crate::camera_az_el::AzElCamera;
 
+<<<<<<< Updated upstream
 // Resource to manage potential parent entities for the camera
+=======
+#[derive(Component)]
+pub struct FirstPersonCamera;
+
+>>>>>>> Stashed changes
 #[derive(Resource)]
 pub struct CameraParentList {
     pub list: Vec<Entity>,
@@ -44,6 +50,24 @@ pub fn camera_parent_system(
                     camera_entity_commands.remove_parent();
                 }
             }
+        }
+    }
+}
+
+pub fn camera_toggle_system(
+    input: Res<Input<KeyCode>>,
+    mut orbit_query: Query<&mut Camera, (With<AzElCamera>, Without<FirstPersonCamera>)>,
+    mut fp_query: Query<&mut Camera, (With<FirstPersonCamera>, Without<AzElCamera>)>,
+) {
+    // Press 'V' to toggle
+    if input.just_pressed(KeyCode::V) {
+        // Toggle the first-person camera
+        if let Ok(mut fp_cam) = fp_query.get_single_mut() {
+            fp_cam.is_active = !fp_cam.is_active;
+        }
+        // Toggle the orbital camera
+        if let Ok(mut orbit_cam) = orbit_query.get_single_mut() {
+            orbit_cam.is_active = !orbit_cam.is_active;
         }
     }
 }
