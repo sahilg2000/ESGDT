@@ -1,13 +1,15 @@
 use rigid_body::sva::Vector;
 
+// Defines possible mirror transformations for terrain pieces
 #[derive(Default)]
 pub enum Mirror {
     #[default]
     None,
-    XZ,
-    YZ,
+    XZ,  // Mirror across XZ plane
+    YZ,  // Mirror across YZ plane
 }
 
+// Mirrors a mesh's geometry based on specified mirror type
 pub fn mirror_mesh(
     size: f32,
     positions: &mut Vec<[f32; 3]>,
@@ -19,10 +21,12 @@ pub fn mirror_mesh(
     match mirror {
         Mirror::None => {}
         Mirror::XZ => {
+            // Flip Y coordinates and normals
             for i in 0..positions.len() {
                 positions[i][1] = -positions[i][1] + size;
                 normals[i][1] = -normals[i][1];
             }
+            // Fix triangle winding order
             for i in 0..indices.len() {
                 let ind1 = indices[i][1];
                 let ind2 = indices[i][2];
@@ -31,10 +35,12 @@ pub fn mirror_mesh(
             }
         }
         Mirror::YZ => {
+            // Flip X coordinates and normals
             for i in 0..positions.len() {
                 positions[i][0] = -positions[i][0] + size;
                 normals[i][0] = -normals[i][0];
             }
+            // Fix triangle winding order
             for i in 0..indices.len() {
                 let ind1 = indices[i][1];
                 let ind2 = indices[i][2];
@@ -45,6 +51,7 @@ pub fn mirror_mesh(
     }
 }
 
+// Mirrors a single point based on specified mirror type
 pub fn mirror_point(point: &mut Vector, size: f64, mirror: &Mirror) {
     match mirror {
         Mirror::None => {}

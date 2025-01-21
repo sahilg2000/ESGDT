@@ -1,3 +1,4 @@
+// Import different terrain elements we can use
 pub mod examples;
 pub mod function;
 pub mod mirror;
@@ -12,6 +13,10 @@ use mirror::Mirror;
 use rigid_body::sva::Vector;
 use rotate::{Rotate, RotationDirection};
 
+// Represents when something collides with our terrain
+// - magnitude: how deep the collision is
+// - position: where the collision happened
+// - normal: direction to push back (like the floor pushing up)
 pub struct Interference {
     pub magnitude: f64,
     pub position: Vector,
@@ -19,24 +24,30 @@ pub struct Interference {
 }
 
 impl Interference {
+    // Handles mirroring the collision data when we flip terrain pieces
     fn mirror(&mut self, size: f64, mirror: &Mirror) {
         match mirror {
             Mirror::None => {}
             Mirror::XZ => {
+                // Flip along Y axis
                 self.position.y = size - self.position.y;
                 self.normal.y = -self.normal.y;
             }
             Mirror::YZ => {
+                // Flip along X axis
                 self.position.x = size - self.position.x;
                 self.normal.x = -self.normal.x;
             }
         }
     }
+
+    // Handles rotating collision data when we rotate terrain pieces
     fn rotate(&mut self, size: f64, rotate: &Rotate, direction: RotationDirection) {
         match (rotate, direction) {
-            (Rotate::Zero, _) => {}
+            (Rotate::Zero, _) => {}  // No rotation needed
             (Rotate::Ninety, RotationDirection::Forward)
             | (Rotate::TwoSeventy, RotationDirection::Reverse) => {
+                // 90 degrees clockwise
                 let x = self.position.x;
                 let y = self.position.y;
                 self.position.x = size - y;
@@ -48,6 +59,7 @@ impl Interference {
                 self.normal.y = x;
             }
             (Rotate::OneEighty, _) => {
+                // 180 degrees
                 self.position.x = size - self.position.x;
                 self.position.y = size - self.position.y;
 
@@ -56,6 +68,7 @@ impl Interference {
             }
             (Rotate::TwoSeventy, RotationDirection::Forward)
             | (Rotate::Ninety, RotationDirection::Reverse) => {
+                // 90 degrees counterclockwise
                 let x = self.position.x;
                 let y = self.position.y;
                 self.position.x = y;
@@ -70,17 +83,22 @@ impl Interference {
     }
 }
 
+// This trait defines what any terrain piece needs to implement:
+// - interference: handling collisions
+// - mesh: creating the 3D visual representation
 pub trait GridElement {
     fn interference(&self, point: Vector) -> Option<Interference>;
     fn mesh(&self) -> Mesh;
 }
 
+// Main terrain class that manages a grid of different terrain pieces
 #[derive(Resource)]
 pub struct GridTerrain {
-    elements: Vec<Vec<Box<dyn GridElement + 'static>>>,
-    step: [f64; 2],
+    elements: Vec<Vec<Box<dyn GridElement + 'static>>>,  // 2D grid of terrain pieces
+    step: [f64; 2],  // Size of each grid cell [width, height]
 }
 
+// Tell Rust it's safe to share this between threads
 unsafe impl Sync for GridTerrain {}
 unsafe impl Send for GridTerrain {}
 
@@ -89,9 +107,11 @@ impl GridTerrain {
         Self { elements, step }
     }
 
+    // Check if a point interferes (collides) with any terrain piece
     pub fn interference(&self, point: Vector) -> Option<Interference> {
+        // Handle points beyond the left or bottom edge
         if point.x < 0. || point.y < 0. {
-            if point.z < 0. {
+            if point.z < 0. {  // Below ground level
                 return Some(Interference {
                     magnitude: -point.z,
                     position: Vector::new(point.x, point.y, 0.),
@@ -101,15 +121,19 @@ impl GridTerrain {
             return None;
         }
 
+        // Figure out which grid cell we're in
         let x_index = (point.x / self.step[0]) as usize;
         let y_index = (point.y / self.step[1]) as usize;
 
+        // Convert world coordinates to local grid cell coordinates
         let local_offset = Vector::new(
             x_index as f64 * self.step[0],
             y_index as f64 * self.step[1],
             0.,
         );
         let local_point = point - local_offset;
+
+        // Check for collision with the terrain piece in this cell
         if let Some(y_elements) = self.elements.get(y_index) {
             if let Some(element) = y_elements.get(x_index) {
                 if let Some(mut interference) = element.interference(local_point) {
@@ -119,6 +143,8 @@ impl GridTerrain {
                 return None;
             }
         }
+
+        // If we're beyond the grid but below ground, treat as ground collision
         if point.z < 0. {
             return Some(Interference {
                 magnitude: -point.z,
@@ -128,6 +154,8 @@ impl GridTerrain {
         }
         return None;
     }
+
+    // Creates all the 3D meshes for visualization
     pub fn build_meshes(
         &self,
         commands: &mut Commands,
@@ -137,21 +165,22 @@ impl GridTerrain {
     ) {
         let x_grid_size = self.elements[0].len() as f64 * self.step[0];
         let y_grid_size = self.elements.len() as f64 * self.step[1];
-        let extended_size = 500.;
+        let extended_size = 500.;  // How far to extend the ground plane
 
-        // add plane meshes outside of the grid specified by the elements
+        // Add flat ground planes around our terrain grid
         let x_offsets = vec![-extended_size, 0.0, x_grid_size];
         let y_offsets = vec![-extended_size, 0.0, y_grid_size];
         let x_sizes = vec![extended_size, x_grid_size, extended_size];
         let y_sizes = vec![extended_size, y_grid_size, extended_size];
 
+        // Create ground planes (skipping where our terrain grid is)
         for y_ind in 0..3 {
             for x_ind in 0..3 {
                 if x_offsets[x_ind] == 0.0 && y_offsets[y_ind] == 0.0 {
                     continue;
                 }
                 let material = materials.add(StandardMaterial {
-                    base_color: Color::rgb_u8(140, 120, 100),
+                    base_color: Color::rgb_u8(140, 120, 100),  // Brown-ish color
                     perceptual_roughness: 1.0,
                     ..default()
                 });
@@ -175,8 +204,9 @@ impl GridTerrain {
             }
         }
 
+        // Create meshes for our actual terrain pieces
         let material = materials.add(StandardMaterial {
-            base_color: Color::rgb_u8(100, 100, 100),
+            base_color: Color::rgb_u8(100, 100, 100),  // Gray color
             perceptual_roughness: 1.0,
             ..default()
         });
