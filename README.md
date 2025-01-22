@@ -5,7 +5,7 @@ Engineering Simulations with Game Development Tools - OSU Capstone Project (Gaik
 
 - [Installation](#installation)
 - [Usage](#usage)
-
+- [Usage with ESGDT Server App](#server)
 ## Installation
 Follow the steps given below to setup and run this project.
 
@@ -57,3 +57,7 @@ Run the Car Simulation using Cargo:
     
     cargo run --example car
 
+## Server
+To use the Car Simulation with the Server application, please navigate to
+[ESGDT Server](https://github.com/sahilg2000/ESGDT-server/)
+and follow the readme instructions provided for that software.
