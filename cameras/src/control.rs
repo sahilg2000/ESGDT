@@ -2,13 +2,10 @@ use bevy::prelude::*;
 
 use crate::camera_az_el::AzElCamera;
 
-<<<<<<< Updated upstream
 // Resource to manage potential parent entities for the camera
-=======
 #[derive(Component)]
 pub struct FirstPersonCamera;
 
->>>>>>> Stashed changes
 #[derive(Resource)]
 pub struct CameraParentList {
     pub list: Vec<Entity>,
