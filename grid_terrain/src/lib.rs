@@ -107,6 +107,12 @@ impl GridTerrain {
         Self { elements, step }
     }
 
+    // A new helper function that receives f32 coords
+    pub fn interference_f32(&self, x: f32, y: f32, z: f32) -> Option<Interference> {
+        let point = rigid_body::sva::Vector::new(x as f64, y as f64, z as f64);
+        self.interference(point)
+    }
+
     // Check if a point interferes (collides) with any terrain piece
     pub fn interference(&self, point: Vector) -> Option<Interference> {
         // Handle points beyond the left or bottom edge

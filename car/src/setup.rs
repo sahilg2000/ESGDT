@@ -18,7 +18,7 @@ use crate::{
 use super::control::CarControl;
 use cameras::{
     camera_az_el::{self, camera_builder},
-    control::camera_parent_system,
+    control::{camera_parent_system, camera_toggle_system},
     line_draw::{LineDrawState, toggle_line_draw_mode_system, line_draw_system},
 };
 
@@ -63,5 +63,5 @@ pub fn camera_setup(app: &mut App) {
             camera_az_el::UpDirection::Z,
         ),
     )
-    .add_systems(Update, (camera_az_el::az_el_camera, camera_parent_system, toggle_line_draw_mode_system, line_draw_system)); // setup the camera
+    .add_systems(Update, (camera_az_el::az_el_camera, camera_parent_system, toggle_line_draw_mode_system,camera_toggle_system, line_draw_system)); // setup the camera
 }

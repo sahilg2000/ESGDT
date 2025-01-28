@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use cameras::control::CameraParentList;
+use cameras::control::{CameraParentList, FirstPersonCamera};
 use rigid_body::{
     definitions::{MeshDef, MeshTypeDef, TransformDef},
     joint::{Base, Joint},
@@ -191,6 +191,24 @@ pub fn car_startup_system(mut commands: Commands, car: ResMut<CarDefinition>) {
         list: camera_parent_list,
         active: 0, // start with following x, y, z and yaw of chassis
     });
+
+    commands
+    .spawn(Camera3dBundle {
+        transform: Transform::from_translation(Vec3::new(1.0, 0.0, 0.5))
+            .looking_at(Vec3::new(10.0, 0.0, 0.5), Vec3::Z),
+        camera_3d: Camera3d {
+            ..default()
+        },
+        camera: Camera {
+            is_active: false,
+            ..default()
+        },
+        ..default()
+    })
+    .set_parent(chassis_id) // <-- Make sure 'chassis_id' is your final chassis joint
+    .insert(Name::new("FirstPersonCamera"))
+    // Add a simple marker so we can query for this camera
+    .insert(FirstPersonCamera);
 
     for (ind, susp) in car.suspension.iter().enumerate() {
         let braked_wheel = if ind < 2 {
