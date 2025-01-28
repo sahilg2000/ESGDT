@@ -19,6 +19,7 @@ use super::control::CarControl;
 use cameras::{
     camera_az_el::{self, camera_builder},
     control::camera_parent_system,
+    line_draw::{LineDrawState, toggle_line_draw_mode_system, line_draw_system},
 };
 
 pub fn simulation_setup(app: &mut App) {
@@ -47,6 +48,7 @@ pub fn simulation_setup(app: &mut App) {
 }
 
 pub fn camera_setup(app: &mut App) {
+    app.init_resource::<LineDrawState>();
     app.add_systems(
         Startup,
         camera_builder(
@@ -61,5 +63,5 @@ pub fn camera_setup(app: &mut App) {
             camera_az_el::UpDirection::Z,
         ),
     )
-    .add_systems(Update, (camera_az_el::az_el_camera, camera_parent_system)); // setup the camera
+    .add_systems(Update, (camera_az_el::az_el_camera, camera_parent_system, toggle_line_draw_mode_system, line_draw_system)); // setup the camera
 }
