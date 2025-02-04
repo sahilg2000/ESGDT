@@ -5,25 +5,19 @@ use crate::camera_az_el::AzElCamera;
 #[derive(Component)]
 pub struct FirstPersonCamera;
 
-// Resource to manage potential parent entities for the camera
-#[derive(Component)]
-pub struct FirstPersonCamera;
-
 #[derive(Resource)]
 pub struct CameraParentList {
     pub list: Vec<Entity>,
     pub active: usize,
 }
 
-// System to handle camera parenting logic
 pub fn camera_parent_system(
     mut commands: Commands,
     mut parent_list: ResMut<CameraParentList>,
     mut query: Query<Entity, With<AzElCamera>>,
     focused_windows: Query<(Entity, &Window)>,
-    input: Res<Input<KeyCode>>, // For user's input
+    input: Res<Input<KeyCode>>,
 ) {
-    // Check whether windows is currently active
     for (_window, focus) in focused_windows.iter() {
         if !focus.focused {
             continue;
@@ -33,7 +27,6 @@ pub fn camera_parent_system(
             continue;
         }
 
-        // Switch to the next parent entity if "C" is pressed
         if input.just_pressed(KeyCode::C) {
             parent_list.active = (parent_list.active + 1) % parent_list.list.len();
         }
