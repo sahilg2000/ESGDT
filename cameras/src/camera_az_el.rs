@@ -91,6 +91,7 @@ pub fn az_el_camera(
         return;
     }
     
+) {
     // Retrieve the current mouse cursor position.
     // If a cursor movement event exists (`CursorMoved`), use its position.
     // Otherwise, return to the cursor last position .
