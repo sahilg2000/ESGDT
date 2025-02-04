@@ -1,5 +1,5 @@
 use bevy::prelude::*;             
-use grid_terrain::GridTerrain;  
+use grid_terrain::GridTerrain; 
 
 use crate::camera_az_el::{AzElCamera, PointerOverUi};
 
@@ -184,26 +184,36 @@ fn spawn_line_hugging_terrain(
     let total_subdiv = 100;
     let segment = p2 - p1;
 
-    for i in 0..total_subdiv {
-        let t1 = i as f32 / total_subdiv as f32;
-        let t2 = (i + 1) as f32 / total_subdiv as f32;
+    // Define how far apart the parallel lines
+    let offset_distance = 2.0; 
 
-        // The approximate (unsnapped) points along the straight line
-        let rough1 = p1 + segment * t1;
-        let rough2 = p1 + segment * t2;
+    let mut last_left = None;
+    let mut last_right = None;
+
+    for i in 0..=total_subdiv {
+        let t = i as f32 / total_subdiv as f32;
+        let rough = p1 + segment * t;
+
+        // Compute perpendicular vector based on previous segment to avoid misalignment
+        let segment_dir = (p2 - p1).normalize();
+        let perpendicular = Vec3::new(-segment_dir.y, segment_dir.x, 0.0).normalize();
+
+        let rough_left = rough + perpendicular * (offset_distance * 0.5);
+        let rough_right = rough - perpendicular * (offset_distance * 0.5);
 
         // Snap both approximate points onto the terrain
-        if let Some(surf1) = snap_point_to_terrain(rough1, terrain) {
-            if let Some(surf2) = snap_point_to_terrain(rough2, terrain) {
-                // Then spawn a short line segment between these snapped points
-                spawn_line_segment(
-                    commands,
-                    surf1,
-                    surf2,
-                    meshes,
-                    materials,
-                );
+        if let Some(surf_left) = snap_point_to_terrain(rough_left, terrain) {
+            if let Some(prev_left) = last_left {
+                spawn_line_segment(commands, prev_left, surf_left, meshes, materials);
             }
+            last_left = Some(surf_left);
+        }
+
+        if let Some(surf_right) = snap_point_to_terrain(rough_right, terrain) {
+            if let Some(prev_right) = last_right {
+                spawn_line_segment(commands, prev_right, surf_right, meshes, materials);
+            }
+            last_right = Some(surf_right);
         }
     }
 }
