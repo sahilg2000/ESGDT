@@ -15,4 +15,4 @@ bevy_obj = {workspace = true}
 
 # internal dependencies
 bevy_integrator = {workspace = true}
-cameras = {workspace = true}
+
