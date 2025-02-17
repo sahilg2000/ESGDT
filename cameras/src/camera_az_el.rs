@@ -4,7 +4,6 @@ use bevy::{
     render::camera::Projection,
 };
 use std::f32::consts::PI;
-use crate::line_draw::LineDrawState; 
 
 // A resource to track if the pointer (mouse) is over a UI element, could be used to prevent camera movement when over future implemented UI.
 #[derive(Resource)]
@@ -83,14 +82,8 @@ pub fn az_el_camera(
     mut query: Query<(&mut AzElCamera, &mut Transform, &Projection)>,
     pointer_over_ui: Res<PointerOverUi>, // Tracks if pointer is over UI
     mut last_position: Local<Vec2>, // Tracks last known cursor position
-    line_draw_state: Res<LineDrawState>,
 ) {
 
-    // If line-draw is enabled, skip camera orbit entirely
-    if line_draw_state.enabled {
-        return;
-    }
-    
     // Retrieve the current mouse cursor position.
     // If a cursor movement event exists (`CursorMoved`), use its position.
     // Otherwise, return to the cursor last position .

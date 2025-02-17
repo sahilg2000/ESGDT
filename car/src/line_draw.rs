@@ -1,35 +1,19 @@
 use bevy::prelude::*;             
 use grid_terrain::GridTerrain; 
 
-use crate::camera_az_el::{AzElCamera, PointerOverUi};
+use cameras::camera_az_el::{AzElCamera, PointerOverUi};
 
 // A resource that tracks whether the user is in "line-draw mode" (`enabled`),
 // along with the last 3D point (`last_point`) we clicked.
 #[derive(Resource)]
 pub struct LineDrawState {
-    pub enabled: bool,
     pub last_point: Option<Vec3>,
 }
 
 impl Default for LineDrawState {
     fn default() -> Self {
         Self {
-            enabled: false,
             last_point: None,
-        }
-    }
-}
-
-// A system that toggles the line-draw mode whenever the user presses `KeyCode::L`.
-pub fn toggle_line_draw_mode_system(
-    keyboard: Res<Input<KeyCode>>,
-    mut line_draw_state: ResMut<LineDrawState>,
-) {
-    if keyboard.just_pressed(KeyCode::L) {
-        line_draw_state.enabled = !line_draw_state.enabled;
-
-        if !line_draw_state.enabled {
-            line_draw_state.last_point = None;
         }
     }
 }
@@ -43,6 +27,7 @@ pub fn toggle_line_draw_mode_system(
 pub fn line_draw_system(
     windows: Query<&Window>,                              // Query for the primary window
     mouse: Res<Input<MouseButton>>,                      // Tracks mouse button presses
+    keyboard: Res<Input<KeyCode>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<AzElCamera>>, 
     mut line_draw_state: ResMut<LineDrawState>,          // Our resource controlling line-draw mode
     mut commands: Commands,                              // For spawning 3D objects
@@ -51,8 +36,15 @@ pub fn line_draw_system(
     mut materials: ResMut<Assets<StandardMaterial>>,      // Asset storage for Material objects
     grid_terrain: Res<GridTerrain>,                      // The terrain resource for collision
 ) {
-    // If not in line-draw mode or we're over a UI element, do nothing
-    if !line_draw_state.enabled || pointer_over_ui.check() {
+
+    // Check if user presses 'R' to reset line drawing
+    if keyboard.just_pressed(KeyCode::R) {
+        line_draw_state.last_point = None;
+        return;
+    }
+
+    // If pointer is over UI, do nothing
+    if pointer_over_ui.check() {
         return;
     }
 
@@ -62,7 +54,7 @@ pub fn line_draw_system(
     let Ok((camera, camera_transform)) = camera_query.get_single() else { return; };
 
     // On LEFT mouse click, we start a raycast
-    if mouse.just_pressed(MouseButton::Left) {
+    if mouse.just_pressed(MouseButton::Right) {
         // Grab the 2D cursor position in window space
         if let Some(cursor_pos) = window.cursor_position() {
             // Convert from 2D cursor position -> a ray (origin, direction) in 3D
@@ -142,8 +134,15 @@ fn raycast_terrain(
         // The point in space we want to test
         let test_point = origin + dir * dist;
 
+        // Convert Vec3 into Vector for interference()
+        let test_point_vector = rigid_body::sva::Vector::new(
+            test_point.x as f64,
+            test_point.y as f64,
+            test_point.z as f64,
+        );
+
         // Ask the terrain if there's a collision at that point
-        if let Some(inter) = terrain.interference_f32(test_point.x, test_point.y, test_point.z) {
+        if let Some(inter) = terrain.interference(test_point_vector) {
             let offset = 0.01; // nudge above the surface by 1 cm
             let collision_point = test_point
                 + Vec3::new(
