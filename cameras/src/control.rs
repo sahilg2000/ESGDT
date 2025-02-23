@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::camera_az_el::AzElCamera;
 
+// Resource to manage potential parent entities for the camera
 #[derive(Component)]
 pub struct FirstPersonCamera;
 
