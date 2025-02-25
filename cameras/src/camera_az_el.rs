@@ -57,6 +57,7 @@ pub struct AzElCamera {
     pub up_direction: UpDirection, // Which axes is "up" for the camera
     pub azimuth: f32, // Horizontal rotation angle
     pub elevation: f32, // Vertical rotation angle
+    
 }
 
  // Default values for the camera
@@ -82,6 +83,7 @@ pub fn az_el_camera(
     pointer_over_ui: Res<PointerOverUi>, // Tracks if pointer is over UI
     mut last_position: Local<Vec2>, // Tracks last known cursor position
 ) {
+
     // Retrieve the current mouse cursor position.
     // If a cursor movement event exists (`CursorMoved`), use its position.
     // Otherwise, return to the cursor last position .

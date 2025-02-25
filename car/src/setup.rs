@@ -18,7 +18,7 @@ use crate::{
 use super::control::CarControl;
 use cameras::{
     camera_az_el::{self, camera_builder},
-    control::{camera_parent_system, camera_toggle_system},
+    control::{camera_parent_system, camera_toggle_system}
 };
 
 pub fn simulation_setup(app: &mut App) {

@@ -1,4 +1,4 @@
-﻿use std::f64::consts::PI as PI64;
+use std::f64::consts::PI as PI64;
 use crate::{
     function::Function, mirror::Mirror, plane::Plane, rotate::Rotate, step::Step,
     step_slope::StepSlope, GridElement,

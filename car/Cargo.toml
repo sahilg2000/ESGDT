@@ -3,26 +3,19 @@ name = "car"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-# bevy
-bevy = {workspace = true}
-bevy_obj = {workspace = true}
-
-rigid_body = {workspace = true}
-bevy_integrator = {workspace = true}
-cameras = {workspace = true}
-
-# physics
-grid_terrain = {workspace = true}
-
+bevy = { workspace = true }
 bevy_hanabi = "0.7"
+bevy_integrator = { path = "../integrator" }
+rigid_body = { path = "../rigid_body" }
+cameras = { path = "../cameras" }
+grid_terrain = { path = "../grid_terrain" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = "0.4"
 
-[[example]]
-name = "car_json"
-path = "./examples/car_json/main.rs"
-
-[[example]]
-name = "car"
-path = "./examples/car.rs"
+[features]
+default = []
+dev = [
+    "bevy/dynamic_linking",
+]
