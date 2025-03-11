@@ -11,18 +11,21 @@ use car::{
 
     ui::*,
     weather::*,
-    logger::*,  
+    logger::*,
+    external_control::*,
 };
 
 fn main() {
     App::new()
-        .add_plugins((RigidBodyPlugin {
-            time: SimTime::new(0.002, 0.0, None),
-            solver: Solver::RK4,
-            simulation_setup: vec![simulation_setup],
-            environment_setup: vec![camera_setup],
-            name: "car_demo".to_string(),
-        }, HanabiPlugin
+        .add_plugins((
+            RigidBodyPlugin {
+                time: SimTime::new(0.002, 0.0, None),
+                solver: Solver::RK4,
+                simulation_setup: vec![simulation_setup],
+                environment_setup: vec![camera_setup],
+                name: "car_demo".to_string(),
+        }, HanabiPlugin, 
+        ExternalControlPlugin,
     ))
         .insert_resource(build_car())
         .insert_resource(Weather::Sunny)
