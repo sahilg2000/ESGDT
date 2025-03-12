@@ -255,7 +255,7 @@ fn spawn_line_segment(
     let rotation = Quat::from_rotation_z(angle_xy);
 
     // A small thickness for the line, and a Z scale of 0.02 for a slightly raised effect
-    let thickness = 0.1; 
+    let thickness = 0.2; 
     // We use a unit shape::Box, then scale it to length × thickness × 0.02
     let mesh_handle = meshes.add(Mesh::from(shape::Box::new(1.0, 1.0, 0.02)));
 
