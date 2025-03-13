@@ -15,6 +15,9 @@ pub struct RpmText;
 pub struct ControlsText;
 
 #[derive(Component)]
+pub struct DirectionText;
+
+#[derive(Component)]
 pub struct WeatherText;
 
 pub fn hud_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -68,6 +71,19 @@ pub fn hud_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                     RpmText,
+                ));
+
+                // Direction display
+                parent.spawn((
+                    TextBundle::from_section(
+                        "Direction: Neutral",
+                        TextStyle {
+                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                            font_size: 20.0,
+                            color: Color::rgb(0.0, 0.8, 0.2),
+                        },
+                    ),
+                    DirectionText,
                 ));
 
                 // Controls
@@ -161,10 +177,28 @@ pub fn update_controls_system(
     for mut text in query.iter_mut() {
         text.sections[1].value = format!(
             "Throttle: {:.0}%\nBrake: {:.0}%\nSteering: {:.0}°",
-            control.throttle * 100.0,
+            control.throttle.abs() * 100.0,
             control.brake * 100.0,
             control.steering * 30.0
         );
+    }
+}
+
+pub fn update_direction_system(
+    mut query: Query<&mut Text, With<DirectionText>>,
+    control: Res<CarControl>,
+) {
+    for mut text in query.iter_mut() {
+        // Create a direction indicator
+        let direction = if control.throttle > 0.0 {
+            "Forward"
+        } else if control.throttle < 0.0 {
+            "Reverse"
+        } else {
+            "Neutral"
+        };
+
+        text.sections[0].value = format!("Direction: {}", direction);
     }
 }
 

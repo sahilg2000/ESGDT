@@ -59,41 +59,72 @@ pub fn user_control_system(
     // Keyboard controls - these are rate controlled to make them feel more natural.
     // When a key is pressed, the control value is increased at a constant rate.
     // When a key is released, the control value is decreased at a constant rate.
-    // The control value is clamped between 0 and const MAX_SPEED for throttle and brake, 
-    // and between -1 and 1 for steering.
+    // The control value is clamped between -MAX_SPEED and MAX_SPEED for throttle,
+    // 0 and MAX_SPEED for brake, and between -1 and 1 for steering.
     
     let acceleration_response_time = 0.25;
     let brake_response_time = 0.1;
+    let reverse_response_time = 0.3; // Slightly slower response for reverse
 
-    let accel_const: f32 =  1. / (acceleration_response_time * 60.);
-    let brake_const: f32 =  1. / (brake_response_time * 60.);
+    let accel_const: f32 = 1. / (acceleration_response_time * 60.);
+    let brake_const: f32 = 1. / (brake_response_time * 60.);
+    let reverse_const: f32 = 1. / (reverse_response_time * 60.);
     
-    // Acceleration
-
     // Define constants at the beginning of your function
-    const MAX_SPEED: f32 = 1.0;                                 // Maximum throttle value
+    const MAX_SPEED: f32 = 1.0;              // Maximum throttle value
+    const MAX_REVERSE_SPEED: f32 = 0.6;      // Maximum reverse speed (lower than forward)
 
     // Forward Acceleration - Key W
     if keyboard_input.pressed(KeyCode::W) {
-        // Clamp acceleration at top speed (chooses min of max_speed and curr speed)
         control.throttle += accel_const;
         control.throttle = control.throttle.min(MAX_SPEED);
-    } else {
-        // If throttle is not active, set throttle to 0 and start applying brake (simplified friction)
-        control.throttle -= accel_const;
-        control.throttle = control.throttle.max(0.0);
-    }
         
+        // When throttling forward, gradually reduce any reverse throttle
+        if control.throttle < 0.0 {
+            control.throttle += accel_const * 2.0; // Transition out of reverse faster
+        }
+    } else if !keyboard_input.pressed(KeyCode::R) { // Only decay if not reversing
+        // If no throttle input, gradually reduce throttle
+        if control.throttle > 0.0 {
+            control.throttle -= accel_const;
+            control.throttle = control.throttle.max(0.0);
+        } else if control.throttle < 0.0 {
+            control.throttle += reverse_const;
+            control.throttle = control.throttle.min(0.0);
+        }
+    }
+
+    // Handle reverse input (R key) - NEW REVERSE FUNCTIONALITY
+    if keyboard_input.pressed(KeyCode::R) {
+        control.throttle -= reverse_const;
+        control.throttle = control.throttle.max(-MAX_REVERSE_SPEED);
+        
+        // When going in reverse, reduce any braking
+        if control.brake > 0.0 {
+            control.brake -= brake_const * 2.0;
+            control.brake = control.brake.max(0.0);
+        }
+    }
 
     // Brake Control - Key S
     if keyboard_input.pressed(KeyCode::S) {
         control.brake += brake_const;
-        control.brake = control.brake.min(MAX_SPEED * 10.0);    // Braking is greater than max speed for use of quick braking
+        control.brake = control.brake.min(MAX_SPEED * 10.0);    // Braking is greater than max speed for quick braking
+        
+        // When braking, gradually reduce throttle (both forward and reverse)
+        if control.throttle != 0.0 {
+            if control.throttle > 0.0 {
+                control.throttle -= accel_const * 2.0;
+                control.throttle = control.throttle.max(0.0);
+            } else {
+                control.throttle += reverse_const * 2.0;
+                control.throttle = control.throttle.min(0.0);
+            }
+        }
     } else {
         control.brake -= brake_const;
         control.brake = control.brake.max(0.0);
     }
-
 
     // Steering
     // gradual adjustment controls
