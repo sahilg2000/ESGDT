@@ -16,7 +16,7 @@ pub struct ControlsText;
 
 #[derive(Component)]
 pub struct WeatherText;
-
+//
 pub fn hud_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(NodeBundle {

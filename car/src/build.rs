@@ -206,6 +206,7 @@ pub fn car_startup_system(mut commands: Commands, car: ResMut<CarDefinition>) {
         ..default()
     })
     .set_parent(chassis_id) // <-- Make sure 'chassis_id' is your final chassis joint
+    
     .insert(Name::new("FirstPersonCamera"))
     // Add a simple marker so we can query for this camera
     .insert(FirstPersonCamera);

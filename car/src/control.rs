@@ -127,7 +127,7 @@ pub fn user_control_system(
     }
 
 
-    // Activity and Idle controls
+    // Activity and Idle control
     if !steer_active {
         if control.steering.abs() < return_to_zero_increment {
             control.steering = 0.0;                         // Reset to zero if close enough

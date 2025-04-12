@@ -18,8 +18,6 @@ impl Default for LineDrawState {
     }
 }
 
-// A system that responds to user clicks (left mouse button) when in line-draw mode.
-// 
 // 1) A ray from the camera is casted into the 3D world to find where it hits the terrain.
 // 2) If there exist a previously clicked point (`last_point`), subdivide the line from that point
 //    to the new point in many segments so it sticks to the terrain's uneven surface.
@@ -53,7 +51,7 @@ pub fn line_draw_system(
     // Attempt to get the camera entity (with AzElCamera) and its transform
     let Ok((camera, camera_transform)) = camera_query.get_single() else { return; };
 
-    // On LEFT mouse click, we start a raycast
+    // On Right mouse click, we start a raycast
     if mouse.just_pressed(MouseButton::Right) {
         // Grab the 2D cursor position in window space
         if let Some(cursor_pos) = window.cursor_position() {
