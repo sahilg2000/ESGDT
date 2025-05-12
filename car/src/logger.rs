@@ -48,7 +48,7 @@ impl InputLogger {
         }
     }
 
-    fn log_event(&self, control_type: &str, event_type: &str, value: f32) {
+    pub fn log_event(&self, control_type: &str, event_type: &str, value: f32) {
         let time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         
         // Convert value to percentage and round to 3 decimal places

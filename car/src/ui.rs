@@ -3,7 +3,9 @@ use rigid_body::joint::Joint;
 use crate::{
     control::CarControl,
     weather::Weather,
+    line_draw::LineDrawState,
 };
+
 
 #[derive(Component)]
 pub struct SpeedometerText;
@@ -13,6 +15,9 @@ pub struct RpmText;
 
 #[derive(Component)]
 pub struct ControlsText;
+
+#[derive(Component)]
+pub struct LineColorText;
 
 #[derive(Component)]
 pub struct WeatherText;
@@ -115,6 +120,30 @@ pub fn hud_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ]),
                     WeatherText,
                 ));
+
+                // Line color display
+                parent.spawn((
+                    TextBundle::from_sections([
+                        TextSection::new(
+                            "Line Color: ",
+                            TextStyle {
+                                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                font_size: 20.0,
+                                color: Color::WHITE,
+                            },
+                        ),
+                        TextSection::new(
+                            "White",
+                            TextStyle {
+                                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                font_size: 20.0,
+                                color: Color::GOLD,
+                            },
+                        ),
+                    ]),
+                    LineColorText,
+                ));
+
             });
         });
 }
@@ -176,5 +205,21 @@ pub fn update_weather_system(
         for mut text in query.iter_mut() {
             text.sections[1].value = format!("{:?}", *weather);
         }
+    }
+}
+
+
+pub fn update_line_color_system(
+    line_draw_state: Res<LineDrawState>,
+    mut query: Query<&mut Text, With<LineColorText>>,
+) {
+    let label = match line_draw_state.color {
+        crate::line_draw::LineColor::White => "White",
+        crate::line_draw::LineColor::Red => "Red",
+        crate::line_draw::LineColor::Yellow => "Yellow",
+    };
+
+    for mut text in query.iter_mut() {
+        text.sections[1].value = label.to_string();
     }
 }

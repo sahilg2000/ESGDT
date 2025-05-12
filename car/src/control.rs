@@ -62,8 +62,8 @@ pub fn user_control_system(
     // The control value is clamped between 0 and const MAX_SPEED for throttle and brake, 
     // and between -1 and 1 for steering.
     
-    let acceleration_response_time = 0.25;
-    let brake_response_time = 0.1;
+    let acceleration_response_time = 0.01;
+    let brake_response_time = 0.2;
 
     let accel_const: f32 =  1. / (acceleration_response_time * 60.);
     let brake_const: f32 =  1. / (brake_response_time * 60.);
@@ -98,8 +98,8 @@ pub fn user_control_system(
     // Steering
     // gradual adjustment controls
     const MAX_STEERING: f32 = 1.0;                 // Max steering angle constant (Affects animation and physics)
-    let steer_increment = 0.005;             // Adjust this value for faster/slower steering response
-    let return_to_zero_increment = 0.01;    // Controls how fast the car will return to 0 or no steering after 'a' and 'd' are released
+    let steer_increment = 0.03;             // Adjust this value for faster/slower steering response
+    let return_to_zero_increment = 0.09;    // Controls how fast the car will return to 0 or no steering after 'a' and 'd' are released
     let mut steer_active = false;
 
 

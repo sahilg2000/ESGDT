@@ -8,12 +8,46 @@ use cameras::camera_az_el::{AzElCamera, PointerOverUi};
 #[derive(Resource)]
 pub struct LineDrawState {
     pub last_point: Option<Vec3>,
+    pub color: LineColor, 
 }
+
+// Line colors for the line segments
+// This is a simple enum to cycle through colors
+// when the user presses 'I'.
+#[derive(Clone, Copy)]
+pub enum LineColor {
+    White,
+    Red,
+    Yellow,
+}
+
+// This enum is used to cycle through colors when the user presses 'I'.
+// It has a method to get the next color in the sequence.
+// The `to_color` method converts the enum to a Bevy `Color` type.
+impl LineColor {
+    fn next(self) -> Self {
+        match self {
+            LineColor::White => LineColor::Red,
+            LineColor::Red => LineColor::Yellow,
+            LineColor::Yellow => LineColor::White,
+        }
+    }
+
+    fn to_color(self) -> Color {
+        match self {
+            LineColor::White => Color::WHITE,
+            LineColor::Red => Color::RED,
+            LineColor::Yellow => Color::YELLOW,
+        }
+    }
+}
+
 
 impl Default for LineDrawState {
     fn default() -> Self {
         Self {
             last_point: None,
+            color: LineColor::White, // Starting color for line segments
         }
     }
 }
@@ -42,6 +76,12 @@ pub fn line_draw_system(
         line_draw_state.last_point = None;
         return;
     }
+    
+    // Cycle through a few hardcoded colors
+    if keyboard.just_pressed(KeyCode::I) {
+        line_draw_state.color = line_draw_state.color.next();
+    }
+    
 
     // If pointer is over UI, do nothing
     if pointer_over_ui.check() {
@@ -62,6 +102,7 @@ pub fn line_draw_system(
                 if let Some(world_pos) = raycast_terrain(origin, dir, 200.0, 0.05, &grid_terrain) {
                     // If we had a previous point, create a line from that old point to the new one
                     if let Some(prev_point) = line_draw_state.last_point {
+                        let color = line_draw_state.color.to_color();
                         spawn_line_hugging_terrain(
                             &mut commands,
                             prev_point,
@@ -69,6 +110,7 @@ pub fn line_draw_system(
                             &grid_terrain,
                             &mut meshes,
                             &mut materials,
+                            color,
                         );
                     }
                     // Store this new point for future line segments
@@ -178,6 +220,7 @@ fn spawn_line_hugging_terrain(
     terrain: &GridTerrain,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    color: Color,
 ) {
     // We subdivide into this many small line pieces
     let total_subdiv = 100;
@@ -203,14 +246,14 @@ fn spawn_line_hugging_terrain(
         // Snap both approximate points onto the terrain
         if let Some(surf_left) = snap_point_to_terrain(rough_left, terrain) {
             if let Some(prev_left) = last_left {
-                spawn_line_segment(commands, prev_left, surf_left, meshes, materials);
+                spawn_line_segment(commands, prev_left, surf_left, meshes, materials, color);
             }
             last_left = Some(surf_left);
         }
 
         if let Some(surf_right) = snap_point_to_terrain(rough_right, terrain) {
             if let Some(prev_right) = last_right {
-                spawn_line_segment(commands, prev_right, surf_right, meshes, materials);
+                spawn_line_segment(commands, prev_right, surf_right, meshes, materials, color);
             }
             last_right = Some(surf_right);
         }
@@ -240,6 +283,7 @@ fn spawn_line_segment(
     p2: Vec3,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    color: Color,
 ) {
     let segment = p2 - p1;
     let length = segment.length();
@@ -261,7 +305,7 @@ fn spawn_line_segment(
 
     // Simple white material so the line is visible
     let material_handle = materials.add(StandardMaterial {
-        base_color: Color::WHITE,
+        base_color: color,
         ..default()
     });
 

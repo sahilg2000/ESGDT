@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Instant;
 use tokio::net::TcpListener;
@@ -7,13 +7,8 @@ use tokio::runtime::Runtime;
 use tokio::task;
 use tokio_tungstenite::accept_async;
 use futures_util::stream::StreamExt;
-use futures_util::SinkExt; 
 use tokio_tungstenite::tungstenite::Message;
-use tokio_tungstenite::connect_async;
-use tokio_tungstenite::WebSocketStream;
-use tokio_tungstenite::MaybeTlsStream;
-use tokio::sync::Mutex as AsyncMutex;
-use tokio::net::TcpStream;
+use crate::logger::InputLogger;
 
 use crate::control::CarControl;
 
@@ -57,6 +52,7 @@ impl Plugin for ExternalControlPlugin {
 fn update_from_external_controls(
     external_controls: Res<ExternalControls>,
     mut car_control: ResMut<CarControl>,
+    logger: ResMut<InputLogger>, // Added logger resource
 ) {
     // If no recent input in last 5s, skip
     if let Ok(last_update) = external_controls.last_update.lock() {
@@ -65,8 +61,21 @@ fn update_from_external_controls(
         }
     }
 
+    static mut LAST_VALUES: (f32, f32, f32) = (0.0, 0.0, 0.0);
+    
+
     // Copy from external to main CarControl if changed
-    if let Ok(external) = external_controls.control.lock() {
+        if let Ok(external) = external_controls.control.lock() {
+        // Save current decision to static variable
+        let (t, b, s) = (external.throttle, external.brake, external.steering);
+        let same_as_last = unsafe { (t, b, s) == LAST_VALUES };
+        if same_as_last {
+            return;
+        }
+        unsafe {
+            LAST_VALUES = (t, b, s);
+        }
+        // Check if values have changed, only update if they have
         if car_control.throttle != external.throttle
             || car_control.brake != external.brake
             || car_control.steering != external.steering
@@ -75,10 +84,15 @@ fn update_from_external_controls(
             car_control.brake = external.brake;
             car_control.steering = external.steering;
 
-            println!(
-                "Updated CarControl - Throttle: {:.2}, Brake: {:.2}, Steering: {:.2}",
-                car_control.throttle, car_control.brake, car_control.steering
-            );
+            if t > 0.01 {
+                logger.log_event("throttle", "external", t);
+            }
+            if b > 0.01 {
+                logger.log_event("brake", "external", b);
+            }
+            if s.abs() > 0.01 {
+                logger.log_event("steering", "external", s);
+            }
 
         }
     }
@@ -119,14 +133,10 @@ async fn handle_websocket_connection(
     println!("Listening for incoming WebSocket messages...");
 
     while let Some(Ok(msg)) = ws_stream.next().await {
-        println!("Received WebSocket message: {:?}", msg);
+        // println!("Received WebSocket message: {:?}", msg);
 
         if let Message::Text(text) = msg {
             if let Some((throttle, brake, steering)) = parse_control_data(&text) {
-                println!(
-                    "Parsed control data - Throttle: {:.2}, Brake: {:.2}, Steering: {:.2}",
-                    throttle, brake, steering
-                );
                 if let Ok(mut car_control) = control.lock() {
                     car_control.throttle = throttle;
                     car_control.brake = brake;
