@@ -215,8 +215,8 @@ pub fn update_line_color_system(
 ) {
     let label = match line_draw_state.color {
         crate::line_draw::LineColor::White => "White",
-        crate::line_draw::LineColor::Red => "Red",
-        crate::line_draw::LineColor::Yellow => "Yellow",
+        crate::line_draw::LineColor::Cyan => "Cyan",
+        crate::line_draw::LineColor::Magenta => "Magenta",
     };
 
     for mut text in query.iter_mut() {

@@ -17,8 +17,8 @@ pub struct LineDrawState {
 #[derive(Clone, Copy)]
 pub enum LineColor {
     White,
-    Red,
-    Yellow,
+    Cyan,
+    Magenta,
 }
 
 // This enum is used to cycle through colors when the user presses 'I'.
@@ -27,17 +27,17 @@ pub enum LineColor {
 impl LineColor {
     fn next(self) -> Self {
         match self {
-            LineColor::White => LineColor::Red,
-            LineColor::Red => LineColor::Yellow,
-            LineColor::Yellow => LineColor::White,
+            LineColor::White   => LineColor::Cyan,
+            LineColor::Cyan    => LineColor::Magenta,
+            LineColor::Magenta => LineColor::White,
         }
     }
 
     fn to_color(self) -> Color {
         match self {
             LineColor::White => Color::WHITE,
-            LineColor::Red => Color::RED,
-            LineColor::Yellow => Color::YELLOW,
+            LineColor::Cyan    => Color::rgb(0.0, 1.0, 1.0),
+            LineColor::Magenta => Color::rgb(1.0, 0.0, 1.0),
         }
     }
 }
