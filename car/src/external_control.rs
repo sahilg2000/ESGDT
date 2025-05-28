@@ -66,7 +66,29 @@ fn update_from_external_controls(
     }
 
     // Copy from external to main CarControl if changed
+<<<<<<< Updated upstream
     if let Ok(external) = external_controls.control.lock() {
+=======
+        if let Ok(external) = external_controls.control.lock() {
+        // Save current decision to static variable
+        let (t, b, s) = (external.throttle, external.brake, external.steering);
+        
+        let same_as_last = unsafe { (t, b, s) == LAST_VALUES };
+        // still update the car every frame …
+        car_control.throttle  = t;
+        car_control.brake     = b;
+        car_control.steering  = s;
+
+        // …but only log when something really changed
+        if !same_as_last {
+            info!("External control → throttle {t:.2}, brake {b:.2}, steering {s:.2}");
+            unsafe { LAST_VALUES = (t, b, s); }
+        }
+        unsafe {
+            LAST_VALUES = (t, b, s);
+        }
+        // Check if values have changed, only update if they have
+>>>>>>> Stashed changes
         if car_control.throttle != external.throttle
             || car_control.brake != external.brake
             || car_control.steering != external.steering
