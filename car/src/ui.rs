@@ -27,7 +27,7 @@ pub fn hud_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(NodeBundle {
             style: Style {
                 width: Val::Px(170.0),  
-                height: Val::Px(180.0),
+                height: Val::Px(210.0),
                 ..default()
             },
             background_color: Color::BLACK.into(),
