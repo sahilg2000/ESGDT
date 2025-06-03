@@ -16,7 +16,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use tokio::net::TcpStream;
 
 use crate::control::CarControl;
-
+use crate::control::user_control_system;
 
 // Define a Resource to hold external data
 #[derive(Resource)]
@@ -49,7 +49,7 @@ impl Plugin for ExternalControlPlugin {
 
         // Insert resources into Bevy
         app.insert_resource(ExternalControls { control, last_update })
-           .add_systems(Update, update_from_external_controls);
+           .add_systems(Update, update_from_external_controls.after(user_control_system),);
     }
 }
 
@@ -157,40 +157,3 @@ fn parse_control_data(msg: &str) -> Option<(f32, f32, f32)> {
 
     Some((throttle, brake, steering))
 }
-
-// Send control updates back to the WebSocket server via a persistent connection
-// fn send_control_update_to_server(throttle: f32, brake: f32, steering: f32) {
-//     let rt = Runtime::new().expect("Failed to create Tokio runtime");
-//     rt.block_on(async move {
-//         println!(
-//             "Sending control update - Throttle: {:.2}, Brake: {:.2}, Steering: {:.2}",
-//             throttle, brake, steering
-//         );
-
-//         let ws = WS_CONNECTION.get_or_init(|| AsyncMutex::new(None));
-//         let mut ws_guard = ws.lock().await;
-
-//         if ws_guard.is_none() {
-//             match connect_async("ws://127.0.0.1:8080").await {
-//                 Ok((stream, _)) => {
-//                     println!("Connected to WebSocket server for control updates.");
-//                     *ws_guard = Some(stream);
-//                 }
-//                 Err(e) => {
-//                     eprintln!("Failed to connect to WebSocket server: {}", e);
-//                     return;
-//                 }
-//             }
-//         }
-
-//         if let Some(ws_stream) = ws_guard.as_mut() {
-//             let data = format!("{:.2} {:.2} {:.2}", throttle, brake, steering);
-//             println!("Sending WebSocket message: {}", data);
-
-//             if let Err(e) = ws_stream.send(Message::Text(data)).await {
-//                 eprintln!("Failed to send control update: {}", e);
-//                 *ws_guard = None; // Reset connection if sending fails
-//             }
-//         }
-//     });
-// }
